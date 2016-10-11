@@ -1,0 +1,196 @@
+by Stone
+v 2.1 - include global shape transform
+04-4-11
+
+Pre-define :
+  a_width, a_height - the width and height of the template A0;
+   i_width, i_height  - the width and height of the image I;
+   v_n                        - the number of the vertices in the shape;
+   s_eig_n                 - the number of the shape's principal components;
+   a_eig_n                 - the number of the appearance's principal components;
+   tri_n                       - the number of the triangles in the face mesh;
+
+Pre-compute:
+  (3) Evaluate the gradient of the template A0
+      Input	   :  A0 (the base appearance of the appearance model | a [a_height,a_width,3] matrix, 3 channels)
+      Operate:  [Gradient_A0x Gradient_A0y] = gradient( A0 );
+                        Gradient_A0 = [ Gradient_A0x, Gradient_A0y ];
+  (4) Evaluate the Jacobians dN_dq and dW_dp at (x;0)
+      Input      : 1) S0 (  the mean shape | a [v_nX2,1] matrix )
+      	     2) Mesh( the triangular mesh of the face | a [tri_n,3] matrix)
+      	     3) S_vecs( the shape vectors | a [v_nX2,s_eig_n] matrix)
+      Operate : dW_dp = zeros(a_height * 2, a_width * s_eig_n);
+      	      for j=1:s_eig_n
+                           dW_dpj = zeros( a_height * 2, a_width );
+      	         for i=1:v_n
+                              [dW_dxi dW_dyi] = Calc_dW_dXi( S0, Mesh, i );
+                              dxi_dpj = S_vecs(i, j);
+                              dyi_dpj = S_vecs(v_n+i, j);
+                              dW_dpj = dW_dpj + dW_dxi * dxi_dpj + dW_dyi * dyi_dpj;
+                           end
+                           dW_dp( :, (j-1)*a_width+1 : j*a_width) = dW_dpj;
+                        end
+                        
+                        dN_dq = zeros( a_height * 2, a_width * 4 );
+                        S0_star = Get_S_x_star( v_n, S0 );
+                        
+                        for j=1:4
+                           dN_dqj = zeros( a_height * 2, a_width );
+                           for i=1:v_n
+                               [dW_dxi dW_dyi] = Calc_dW_dXi( S0, Mesh, i );
+                               dxi_dqj = S0_star( i, j );
+                               dyi_dqj = S0_star( v_n+i, j); 
+                               dN_dqj = dN_dqj + dW_dxi * dxi_dqj + dW_dyi * dyi_dqj;
+                            end
+                            dN_dq( :, (j-1)*a_width+1 : j*a_width) = dN_dqj;
+                         end
+                         
+                         dNW_qp = [ dN_dq dW_dp ];
+                               
+      Function : 1) function [dW_dxi dW_dyi] = Calc_dW_dXi( S0, Mesh, i );
+                             where dW_dxi and dW_dyi are matrixs with a_height*2 rows and a_width columns.
+                         2) function S_x_star = Get_S_x_star( v_n, S_x )
+                                 S_x_star = zeros(v_n*2, 4);
+                                 S_x_star(:, 1) = S_x;
+                                 S_x_star(1:v_n, 2)             = -S_x(v_n+1:v_n*2, 1);
+                                 S_x_star(v_n+1:v_n*2, 2) =  S_x(1:v_n, 1);
+                                 S_x_star(1:v_n, 3)             = ones(v_n, 1);
+                                 S_x_star(v_n+1:v_n*2, 3) = zeros(v_n, 1);
+                                 S_x_star(1:v_n, 4)             = zeros(v_n, 1);
+                                 S_x_star(v_n+1:v_n*2, 4) = ones(v_n, 1);
+                              end
+                             
+  (5) Compute the modified steepest descent images using Equation (41)
+      Input       :  1) Gradient_A0
+                         2) dW_dp
+                         3) A ( the appearance vectors | a [a_height, a_width*a_eig_n, 3] matrix, 3 channels )
+                         4) dN_dq
+      Operate  : SD_W = zeros( a_height, a_width*s_eig_n, 3 );
+                        for j=1:s_eig_n
+                           VA0_dW_dpj = Calc_VA0_dW_dpj( Gradient_A0, dW_dp, j );
+                           sigma_out = zeros( a_height, a_width, 3 );
+                            for i=1:a_eig_n
+                               mid = VA0_dW_dpj .* A(:, (i-1)*a_width+1:i*a_width, :);
+                               sigma_inner = sum(sum( mid ));
+                               sigma_out(:,:,1) = sigma_out(:,:,1) + A(:, (i-1)*a_width+1:i*a_width, 1) * sigma_inner(1,1,1);
+                               sigma_out(:,:,2) = sigma_out(:,:,2) + A(:, (i-1)*a_width+1:i*a_width, 2) * sigma_inner(1,1,2);
+                               sigma_out(:,:,3) = sigma_out(:,:,3) + A(:, (i-1)*a_width+1:i*a_width, 3) * sigma_inner(1,1,3);
+                            end
+                            SDj_W = VA0_dW_dpj - sigma_out;
+                            SD_W(:, (j-1)*a_width+1:j*a_width, :) = SDj_W;
+                         end
+                         
+                         SD_N = zeros( a_height, a_width*4, 3 );
+                         for j=1:4
+                            VA0_dN_dqj = Calc_VA0_dN_dqj( Gradient_A0, dN_dq, j);
+                            sigma_out = zeros( a_height, a_width, 3 );
+                            for i=1:a_eig_n
+                               mid = VA0_dN_dqj .* A(:, (i-1)*a_width+1:i*a_width, :);
+                               sigma_inner = sum(sum( mid ));
+                               sigma_out(:,:,1) = sigma_out(:,:,1) + A(:, (i-1)*a_width+1:i*a_width, 1) * sigma_inner(1,1,1);
+                               sigma_out(:,:,2) = sigma_out(:,:,2) + A(:, (i-1)*a_width+1:i*a_width, 2) * sigma_inner(1,1,2);
+                               sigma_out(:,:,3) = sigma_out(:,:,3) + A(:, (i-1)*a_width+1:i*a_width, 3) * sigma_inner(1,1,3);
+                            end
+                            SDj_N = VA0_dN_dqj - sigma_out;
+                            SD_N(:, (j-1)*a_width+1:j*a_width, :) = SDj_N;
+                         end
+                         
+                         SD = [ SD_N SD_W ];
+                         
+     Function  : 1) function VA0_dW_dpj = Calc_VA0_dW_dpj( Gradient_A0, dW_dp, j )
+                              where VA0_dW_dpj is a matrix with a_height rows and a_width columns, 3 channels.
+                         2) function VA0_dN_dqj = Calc_VA0_dN_dqj(  Gradient_A0, dN_dq, j)
+                              where VA0_dW_dpj is a matrix with a_height rows and a_width columns, 3 channels.
+                              
+   (6) Compute the Hessian matrix using modified steepest descent images
+     Input         : SD
+     Operate    : H = zeros( s_eig_n+4, s_eig_n+4, 3 );    
+                         H_inv = zeros( s_eig_n+4, s_eig_n+4, 3 );       
+                         for i=1:s_eig_n+4
+                             h1 = SD(:, (i-1)*a_width+1:i*a_width,:);
+                             for j=1:s_eig_n+4
+                                h2 = SD(:, (j-1)*a_width+1:j*a_width,:);    
+                                H(j, i,:) = sum(sum(h1.*h2));
+                             end
+                         end
+                         H_inv(:,:,1) = inv( H(:,:,1) );
+                         H_inv(:,:,2) = inv( H(:,:,2) );
+                         H_inv(:,:,3) = inv( H(:,:,3) );
+                         
+Iterate:
+   (1) Warp I with W(x;p) followed by N(x;q) to compute I(W(x;p))
+      Input         : 1) p ( the shape parameters | a [ s_eig_n, 1 ] matrix )
+                          2) S0 (  the mean shape | a [v_nX2,1] matrix )
+                          3) Mesh( the triangular mesh of the face | a [tri_n,3] matrix)
+                          4) S_vecs( the shape vectors | a [v_nX2,s_eig_n] matrix)
+                          5) I ( the target image | a [i_height, i_width, 3] matrix, 3 channels)
+                          6) q ( the global shape transform parameters | a [ 4, 1 ] matrix )
+      Operate    : S = S_vecs * p + S0; %note the center of S are on origin
+                                                      
+                           S_star = Get_S_x_star( v_n, S );                           
+                           S = S_star * q + S;
+                           
+                           I_warp = Piecewise_Warp(I, S0, S, Mesh);
+      Function   : function I_warp = Piecewise_Warp(I, S0, S, Mesh)
+                              where I_warp is a matrix which has the same size of I.
+                              
+   (2) Compute the error image I_warp - A0
+      Input         : 1) I_warp ( I(w(x;p)) | a [ a_height, a_width, 3 ] matrix )
+                          2) A0 ( the template image, the base appearance | a [ a_height, a_width, 3 ] matrix )
+      Operate    : err_image = I_warp - A0;
+      
+   (7) Compute dot product of modified steepest descent images with error image
+      Input         : 1) err_image ( error image | a [a_height, a_width, 3] matrix ) 
+                          2) SD ( the modified steepest descent images | a [a_height, a_width*(s_eig_n+4), 3] matrix )                         
+      Operate    : SD_err_image = zeros( s_eig_n+4, 1, 3 );
+                           for j=1:(s_eig_n+4)
+                              h1 = SD(:, (j-1)*a_width+1:j*a_width, :);
+                              SD_err_image(j, 1, :) = sum(sum(h1 .* err_image));
+                           end
+                           
+   (8) Compute delta q and delta p by multiplying by inverse Hessian
+      Input         : 1) H_inv ( the inverse of Hessian matrix | a [s_eig_n+4, s_eig_n+4, 3] matrix )
+                          2) SD_err_image( dot product of modified steepest descent images with error image | a [s_eig_n+4, 1, 3] matrix )
+      Operate    : delta_qp = zeros( s_eig_n+4, 1, 3 );
+                          delta_qp(:,1,1) = H_inv(:,:,1) * SD_err_image(:,:,1);
+                          delta_qp(:,1,2) = H_inv(:,:,2) * SD_err_image(:,:,2);
+                          delta_qp(:,1,3) = H_inv(:,:,3) * SD_err_image(:,:,3);   
+                                  
+   (9) Update the warp (NoW)(x;q,p) <- (NoW)(x;q,p) o (NoW)(x;delta_q,delta_p)_-1
+      Input         : 1) delta_qp ( a [s_eig_n+4, 1, 3] matrix )
+                          2) S0 (  the mean shape | a [v_nX2,1] matrix )
+                          3) S  ( the shape generated by p | a [v_nX2,1] matrix )        
+                          4) Mesh( the triangular mesh of the face | a [tri_n,3] matrix)
+                          5) S_vecs( the shape vectors | a [v_nX2,s_eig_n] matrix)      
+                          6) S0_star (the global shape transform vectors under S0 | a [v_n*2, 4] matrix)         
+      Operate    : S_est = zeros(v_n*2, 1, 3);
+                           for i=1:3
+                              S_delta_p = S_vecs * (-delta_qp(5:s_eig_n+4,1,i)) + S0
+                              S_delta_p_star = Get_S_x_star( v_n, S_delta_p );
+                              S_delta_qp = S_delta_p_star * (-delta_qp(1:4, 1, 3)) + S_delta_p;
+                           
+                              for j=1:v_n
+                                 Tris_adjacent = Find_adjacent_triangles( Mesh, j );
+                                 Tris_adjacent = Find_alpha_beta( S0, S_delta_qp, Tris_adjacent, j );
+                                 Verts_warped = Find_verts_in_shape( Tris_adjacent, S ); 
+                                 Verts_mean    = mean( Verts_warped );
+                                 S_est( j, 1, i ) = Verts_mean(1,1);
+                                 S_est( v_n+j, 1, i) = Verts_mean(1,2);
+                              end
+                           end
+                           S_est = mean( S_est, 3 ); % S_est degenerates to 1 channel
+                           
+                           q = S0_star' * (S_est - S0);
+                           
+                           S_est_star = Get_S_x_star( v_n, S_est );
+                           S_est_negative_q = S_est_star *(-q) + S_est;
+                           
+                           p = S_vecs' * (S_est_negative_q - S0);
+                           
+      Function   : 1) function Tris_adjacent = Find_adjacent_triangles( Mesh, j )
+                                  where Tris_adjacent is a [How_many_adjacent_triangles_around_vert_j, 5] matrix, in each row it contains tri_vert1, tri_vert2, tir_vert3, alpha and beta, although alpha and beta is blank now, they are just preserved for future use.
+                           2) function Tris_adjacent = Find_alpha_beta( S0, S_delta_p, Tris_adjacent, j )
+                                  where Tris_adjacent is described as above.
+                           3) function Verts_warped = Find_verts_in_shape( Tris_adjacent, S )
+                                  where Verts_warped is a [How_many_adjacent_triangles_around_vert_j, 2] matrix. in each row it contains x, y of a corresponding vertex in S.                    
+                              

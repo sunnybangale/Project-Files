@@ -1,0 +1,498 @@
+2D AAM Algorithm Design - for Matlab
+
+based on   i) AAM-API by Mikkel B. Stegmann
+                  ii) M. B. Stegmann, Active Appearance Models: Theory, Extensions and Cases, pp. 262, Informatics and Mathematical Modelling, Technical University of Denmark, DTU, 2000.
+                 iii) I. Matthews, S. Baker. Active Appearance Models Revisited. International Journal of Computer Vision, 2005.
+                 iv) S. Baker, I. Matthews. Lucas-Kanade 20 Years On: A Unifying Framework. International Journal of Computer Vision, Vol. 56, No. 3, March, 2004, pp. 221 - 255.
+v2.0  2004-4-23 23:02 by Stone | WANG Lei
+
+1. System Architecture by Function
+   1.1 (F1) Shape annotation
+         Borrowed from AAM-API. See Annotate.m for detail
+         
+   1.2 (F2) Shape Model
+         Input    : 
+                        1) samples_dir ( the directory of samples where ASF files are existed | char array )
+                        2) zip_ratio ( the accuracy of shape PCA | a double variable range in (0,1) )
+                        3) downscale ( the shrink ratio from the original shape )
+         Output : 
+                        1) v_n ( the vertices number of the shape )
+                        2) s_eig_n ( the number of the shape's principal components | a double variable )
+                        3) S0 ( the mean shape after applying PCA to shapes | a [v_n*2, 1] matrix )                        
+                        4) S_vecs ( the shape vectors | a [v_n*2,s_eig_n] matrix )
+                        5) Range_shape_proj_param ( the shape parameters' range according to samples | a [s_eig_n, 2] matrix )
+         Operate: 
+                          % Load the shapes to a matrix
+		files = dir([samples_dir , '\*.asf']);
+		Fnum = size(files, 1);
+		
+		% - Load the first shape and determine the numbers of points per shape
+		shape1 = readasf([samples_dir '\' files(1).name]);  
+		v_n = size(shape1, 1) / 2;
+		
+		% - Pre-relocate a memery block to contain the data
+		Sample_shapes0 = zeros( v_n*2, Fnum );
+		Sample_shapes0(:, 1) = shape1;
+		
+		% - Load the other shapes
+		for i = 2 : Fnum
+			Sample_shapes0(:, i) = readasf([samples_dir '\' files(i).name]);	            
+		end        
+		                  
+		% Do shape alignment
+		Sample_shapes = DoShapeAlign( Sample_shapes0,downscale, true );
+		
+		% Apply PCA to shapes
+		[S_vecs, Vals, S0] = PCA( Sample_shapes, zip_ratio );
+		s_eig_n = size( S_vecs, 2 );
+		
+		% Get the shape parameters' range according to samples
+		proj_paras = zeros(s_eig_n, Fnum);
+		for i=1:Fnum
+		    cs = Sample_shapes(:,i);
+			% - project the sample shape to the Vecs
+			proj_paras(:,i) = S_vecs'*(cs - S0);
+		end
+		
+		Range_shape_proj_param = zeros(s_eig_n, 2);
+		Range_shape_proj_param(:,1) = min(proj_paras, [], 2);
+		Range_shape_proj_param(:,2) = max(proj_paras, [], 2);
+
+          Functions:
+                          1) (F2.1) function current_shape = readasf(f_asf)
+                                         where current_shape is a [v_n*2,1] matrix. NOTE: the value of current_shape is NOT relative as in ASF files but absolute coordinates in image frame.                        
+                          3) (F2.2) function Sample_shapes = DoShapeAlign( Sample_shapes0,downscale, bTangentProject )
+                                         where Sample_shapes is a [v_n*2, Fnum] matrix. NOTE: Sample_shapes has the average size of the original sample shapes in image frames, but its center is at origo and have been global similarity transfom corrected.
+                          4) (F2.3) function [S_vecs, Vals, S0] = PCA( Sample_shapes, zip_ratio )
+                                         where Vals is a [s_eig_n, 1] matrix; S_vecs and S0 are described as above.
+                                         This function do PCA according to the zip_ratio.
+                                         
+   1.3 (F3) Appearance Model    
+        Input        :
+                         1) samples_dir ( the directory of samples where bmp files and their corresponding ASF files are existed | char array ) 
+                         2) S0 ( the mean shape after applying PCA to shapes | a [v_n*2, 1] matrix ) 
+                         3) downscale ( how many times to downsample | a double variable ) 
+                         4) zip_ratio ( the accuracy of shape PCA | a double variable range in (0,1) )
+        Output     :
+                         1) a_height, a_width ( the height and width of the base appearance A0 )
+                         2) nchannels ( the color channels of the sample images | a double variable 1 or 3 )
+                         3) A0 ( the base appearance of the appearance model | a [a_height*a_width, 1, nchannels] matrix )                                                     
+                         4) a_eig_n ( the number of the appearance's principal components )
+                         5) A ( the appearance vectors | a [a_height*a_width, a_eig_n, nchannels] matrix )
+                         6) Range_appearance_proj_param (the appearance parameters' range according to samples | a [a_eig_n, 2] matrix)
+                         7) warp_table (the warp table for warp to S0 | a [How_many_pixels_in_the_mean_shape, 6] matrix )
+                         8) Mesh ( the shape mesh for S0 | a [How_many_triangles_in_the_mean_shape_mesh, 3] matrix )
+        Operate:
+                         % get some initial information
+		files = dir([samples_dir , '\*.bmp']);
+		f_bmp = [samples_dir '\' files(1).name];
+		%%%%%%%
+		%% we only support gray image for debug purpose
+		imsample = rgb2gray(imread(f_bmp));
+		%%%%%%%
+		Fnum = size( files, 1 );
+		i_height = round(size(imsample, 1) / downscale);
+		i_width  = round(size(imsample, 2) / downscale);
+		nchannels = size( imsample, 3 );
+		
+		% get the warp table for warping into S0 
+		[ warp_table, Mesh, a_height, a_width ] = GetWarpTable(S0, i_height, i_width);   
+		         
+		% warps the samples into S0
+			% create the warped image matrix
+			Warp_images = zeros(a_height*a_width, Fnum, nchannels);
+			fprintf(1, '将要根据mean_shape对%d个样本进行采样,请耐心等待...\n', Fnum);
+			% warp the samples
+			for i = 1:Fnum
+			             f_bmp = [samples_dir '\' files(i).name];
+		                 f_asf = strrep(f_bmp, 'bmp', 'asf');
+		                 %%%%%%%%% we only support gray image for debug purpose
+		                 current_image = double(imresize(rgb2gray(imread(f_bmp)),1/downscale, 'bicubic'));      % downscale using bicubic spline interp
+			             current_shape = readasf(f_asf) / downscale;
+			             
+		                 % transform current_shape to current_image frame
+		                 v_n = size( current_shape, 1 ) / 2;
+		                 current_shape = reshape( current_shape, v_n, 2 );
+		                                  
+			             Warp_images(:,i,:) = Piecewise_Warp(current_shape, current_image, nchannels, warp_table, Mesh, a_height, a_width );
+			             fprintf(1, '    完成对样本%d的采样\n', i);
+			end    
+			
+		% Normalize the warped images
+		% fprintf(1, '完成采样,将要对采样得到的图像进行归一化处理,请耐心等待...\n');
+		% Warp_images = NormalizeWarpImages( Warp_images, nchannels );
+		% fprintf(1, '完成图像归一化处理...\n');
+		
+		% Apply PCA to the warped images
+			% transform the warped images matrix to single channel(sc) in order to do PCA
+			Warp_images_sc = zeros( a_height*a_width*nchannels, Fnum );
+			for i=1:nchannels
+			            Warp_images_sc((i-1)*a_height*a_width+1:i*a_height*a_width, :) = Warp_images(:,:,i);
+			end
+			% do PCA
+			[A_sc, Vals, A0_sc] = PCA( Warp_images_sc, zip_ratio );
+			a_eig_n = size( A_sc, 2 );
+			% transform the warped images back to multi-channels
+			A = zeros( a_height*a_width, a_eig_n, nchannels );
+			A0 = zeros( a_height*a_width, 1, nchannels );
+			for i=1:nchannels
+		             A(:,:,i) = A_sc((i-1)*a_height*a_width+1:i*a_height*a_width, :);
+		             A0(:,:,i) = A0_sc((i-1)*a_height*a_width+1:i*a_height*a_width, :);
+		    end
+		% Get the appearance parameters' range according to samples
+			proj_paras = zeros(a_eig_n, Fnum);  
+			for i=1:Fnum
+		    	    ca = Warp_images_sc(:,i);
+		    	    % - project the sample appearances to the Vecs
+		            proj_paras(:,i) = A_sc'*(ca - A0_sc);
+			end
+			Range_appearance_proj_param = zeros(a_eig_n, 2);
+			Range_appearance_proj_param(:,1) = min(proj_paras, [], 2);
+			Range_appearance_proj_param(:,2) = max(proj_paras, [], 2);
+        Functions:
+                         1) (F3.1) function [ warp_table, Mesh, a_height, a_width ] = GetWarpTable(S0, i_height, i_width)
+                                        where warp_table is a [How_many_pixels_in_the_mean_shape, 5] matrix, in each row there are px, py, triangle, alpha, beta, gamma.
+                                           Mesh is a [How_many_triangles_in_the_mean_shape_mesh, 3] matrix.
+                                           a_height, a_width is the width and height of the base appearance A0 according to the mean shape.
+                         2) function current_shape = readasf(f_asf)
+                                        Just is (F2.1) 
+                         3) (F3.2) function Warped_image = Piecewise_Warp(current_shape, current_image, nchannels, warp_table, Mesh, a_height, a_width );
+	                      where Warped_image is a [a_height*a_width, 1, nchannels] matrix.
+	                          Do piecewise warp from the I0(region of the current_image under current_shape ) to the I(region defined by Mesh and warp_table with the dimension a_height and a_width,)
+	       4) (F3.3) Warp_images = NormalizeWarpImages( Warp_images )
+	                     where Warp_images is a [a_height*a_width, Fnum, nchannels] matrix
+	                         do appearance normalization according  ii)
+	       5) function [A, Vals, A0] = PCA( Warp_images_sc, zip_ratio )
+	                    Just is (F2.3)
+	                    
+   1.4 (F4) Fitting Pre-Calculation
+        Input        : 	     
+	        1) A0 ( the base appearance of the appearance model | a [a_height*a_width,1 ,nchannels] matrix )
+	        2) S0 (  the mean shape | a [v_n*2,1] matrix )
+      	        3) Mesh( the triangular mesh of the face | a [How_many_triangles_in_the_mean_shape_mesh, 3] matrix)
+      	        4) S_vecs( the shape vectors | a [v_n*2, s_eig_n] matrix)
+      	        5) v_n ( the vertices number of the shape )
+      	        6) s_eig_n ( the number of the shape's principal components | a double variable )
+      	        7) A ( the appearance vectors | a [a_height*a_width*a_eig_n,1 , nchannels] matrix )
+      	        8) nchannels ( the color channels of the sample images | a double variable 1 or 3 )
+      	        9) a_height, a_width ( the height and width of the base appearance A0 ) 
+      	        10) warp_table (the warp table for warp to S0 | a [How_many_pixels_in_the_mean_shape, 6] matrix )
+      	        11) a_eig_n ( the number of the appearance's principal components ) 
+       Output       :
+                          1) H_inv ( the inverse of the Hessian Matrix | a [s_eig_n+4, s_eig_n+4, nchannels] matrix )
+                          2) SD ( the modified steepest descent images | a [a_height, a_width*(s_eig_n+4), nchannels] matrix )
+       Operate     :
+                          fprintf(1, '\nBegin to do fitting pre-calculate, be patient...\n');
+
+		% transform the A and A0 to normal
+		A0 = reshape(A0, a_height, a_width, nchannels);
+		temp = zeros(a_height, a_width*a_eig_n, nchannels);
+		for i=1:a_eig_n
+		             temp(:, (i-1)*a_width+1:i*a_width, : ) = reshape(A(:,i,:), a_height, a_width, nchannels);
+		end
+		A = temp;
+		
+		% Evaluate the gradient of the template A0
+		[Gradient_A0x Gradient_A0y] = gradient( A0 );
+		Gradient_A0 = [ Gradient_A0x ; Gradient_A0y ];  
+		                             
+		% Evaluate the Jacobians dN_dq and dW_dp at (x;0)
+		% ===============================================
+		dW_dp = zeros(a_height * 2, a_width * s_eig_n);
+		
+		% first we calculate dW_dx and dW_dy
+		fprintf(1, '    Calculate dW_dx, this step may be slow, please be patient...\n');  
+		dW_dx = zeros(a_height*2, a_width*v_n);
+		dW_dy = zeros(a_height*2, a_width*v_n);
+		for i=1:v_n
+			[ dW_dx(:, (i-1)*a_width+1:i*a_width)  dW_dy(:, (i-1)*a_width+1:i*a_width) ] = Calc_dW_dXi( S0, warp_table, Mesh, i, a_height, a_width );
+			fprintf(1, '       %d/%d\n', i, v_n);  
+		end
+		
+		for j=1:s_eig_n
+			dW_dpj = zeros( a_height * 2, a_width );
+			for i=1:v_n	            
+			                            dxi_dpj = S_vecs(i, j);
+		                                dyi_dpj = S_vecs(v_n+i, j);
+		                                dW_dpj = dW_dpj + dW_dx(:, (i-1)*a_width+1:i*a_width ) * dxi_dpj + dW_dy(:, (i-1)*a_width+1:i*a_width) * dyi_dpj;
+			end
+			dW_dp( :, (j-1)*a_width+1 : j*a_width) = dW_dpj;
+		 end                     
+		    
+		dN_dq = zeros( a_height * 2, a_width * 4 );
+		S0_star = Get_S_x_star( v_n, S0 );                   
+		
+		for j=1:4
+			dN_dqj = zeros( a_height * 2, a_width );
+			for i=1:v_n
+		                                 dxi_dqj = S0_star( i, j );
+		                                 dyi_dqj = S0_star( v_n+i, j); 
+		                                 dN_dqj = dN_dqj + dW_dx(:, (i-1)*a_width+1:i*a_width ) * dxi_dqj + dW_dy(:, (i-1)*a_width+1:i*a_width) * dyi_dqj;
+			end
+			dN_dq( :, (j-1)*a_width+1 : j*a_width) = dN_dqj;
+		end              
+		% =========================================                  
+		                         
+		% Compute the modified steepest descent images using Equation (41) in iii)
+		SD_W = zeros( a_height, a_width*s_eig_n, nchannels );
+		for j=1:s_eig_n
+			VA0_dW_dpj = Calc_VA0_dW_dpj( Gradient_A0, dW_dp, j , a_height, a_width, nchannels);
+			sigma_out = zeros( a_height, a_width, nchannels );
+			for i=1:a_eig_n
+		                               mid = VA0_dW_dpj .* A(:, (i-1)*a_width+1:i*a_width, :);
+		                               sigma_inner = sum(sum(sum( mid )));
+		                               sigma_out = sigma_out + A(:, (i-1)*a_width+1:i*a_width, :) * sigma_inner;  
+			end
+			SDj_W = VA0_dW_dpj - sigma_out;
+			SD_W(:, (j-1)*a_width+1:j*a_width, :) = SDj_W;
+		end                         
+		
+		SD_N = zeros( a_height, a_width*4, nchannels );
+		for j=1:4
+			VA0_dN_dqj = Calc_VA0_dN_dqj( Gradient_A0, dN_dq, j, a_height, a_width, nchannels);
+			sigma_out = zeros( a_height, a_width, nchannels );
+			for i=1:a_eig_n
+		                               mid = VA0_dN_dqj .* A(:, (i-1)*a_width+1:i*a_width, :);
+		                               sigma_inner = sum(sum(sum( mid )));
+		                               sigma_out = sigma_out + A(:, (i-1)*a_width+1:i*a_width, :) * sigma_inner; 
+			end
+			SDj_N = VA0_dN_dqj - sigma_out;
+			SD_N(:, (j-1)*a_width+1:j*a_width, :) = SDj_N;
+		end
+		SD = [ SD_N SD_W ];
+		                          
+		% Compute the Hessian matrix using modified steepest descent images
+		H = zeros( s_eig_n+4, s_eig_n+4, nchannels );    
+		H_inv = zeros( s_eig_n+4, s_eig_n+4, nchannels );       
+		for i=1:s_eig_n+4
+			h1 = SD(:, (i-1)*a_width+1:i*a_width,:);
+			for j=1:s_eig_n+4
+		                                h2 = SD(:, (j-1)*a_width+1:j*a_width,:);    
+		                                H(j, i,:) = sum(sum(h1.*h2));  % ????? Should we consider H one channel or nchannels?
+			end
+		end
+		
+		for k=1:nchannels
+			H_inv(:,:,k) = inv( H(:,:,k) );
+		end                          
+
+       Functions:
+                         1) (F4.1) function [dW_dxi dW_dyi] = Calc_dW_dXi( S0, warp_table, Mesh, i, a_height, a_width );
+                                        where dW_dxi and dW_dyi are matrixs with a_height*2 rows and a_width columns.
+                         2) (F4.2) function S_x_star = Get_S_x_star( v_n, S_x )
+                                           S_x_star = zeros(v_n*2, 4);
+                                 	       S_x_star(:, 1) = S_x;
+                                           S_x_star(1:v_n, 2)             = -S_x(v_n+1:v_n*2, 1);
+                                  	       S_x_star(v_n+1:v_n*2, 2) =  S_x(1:v_n, 1);
+                                  	       S_x_star(1:v_n, 3)             = ones(v_n, 1);
+                                  	       S_x_star(v_n+1:v_n*2, 3) = zeros(v_n, 1);
+                                  	       S_x_star(1:v_n, 4)             = zeros(v_n, 1);
+                                  	       S_x_star(v_n+1:v_n*2, 4) = ones(v_n, 1);
+                                  	       
+                                  	       [Q,R] = qr(S_x_star, 0); % orthornormalize S_x_star
+    		      S_x_star = Q;
+                               	    end
+                         3) (F4.3) function VA0_dW_dpj = Calc_VA0_dW_dpj( Gradient_A0, dW_dp, j, a_height, a_width, nchannels)
+                                         where VA0_dW_dpj is a [a_height, a_width] matrix .
+                         4) (F4.4) function VA0_dN_dqj = Calc_VA0_dN_dqj(  Gradient_A0, dN_dq, j, a_height, a_width, nchannels)
+                                          where VA0_dW_dpj is a  [a_height, a_width] matrix.  
+                                          
+   1.5 (F5) Fitting
+       Input         :
+                         1) p ( the shape parameters | a [ s_eig_n, 1 ] matrix )
+                         2) q ( the global shape transform parameters | a [ 4, 1 ] matrix )
+                         3) S0 (  the mean shape | a [v_n*2,1] matrix )
+                         4) S_vecs( the shape vectors | a [v_nX2,s_eig_n] matrix)
+                         5) I ( the target image | a [i_height, i_width, nchannels_I] matrix )
+                         6) A0 ( the template image, the base appearance | a [ a_height, a_width, nchannels ] matrix )
+                         7) nchannels ( the color channels of the sample images | a double variable 1 or 3 )
+                         8) SD ( the modified steepest descent images | a [a_height, a_width*(s_eig_n+4), nchannels] matrix )
+                         9) H_inv ( the inverse of Hessian matrix | a [s_eig_n+4, s_eig_n+4, nchannels] matrix )
+                         10) Mesh( the triangular mesh of the face | a [tri_n,3] matrix)
+                         11) a_height, a_width ( the height and width of the base appearance A0 ) 
+                         12) n_iters ( the maximal numbers to iterate )
+                         13) RMS_err ( the accuracy of iteration )
+                         14) warp_table (the warp table for warp to S0 | a [How_many_pixels_in_the_mean_shape, 6] matrix )
+                         15) v_n (the vertices number of the shape)
+                         16) Range_shape_proj_param (the shape parameters' range according to samples | a [s_eig_n, 2] matrix)
+       Output     :
+                         1) p ( the shape parameters | a [ s_eig_n, 1 ] matrix )
+                         2) q ( the global shape transform parameters | a [ 4, 1 ] matrix )
+       Operate   :
+                        % Check the validity of the fitting
+		if (size(I, 3)~= nchannels)
+			error('the channels between the target image and the appearance model is not match');
+		end
+		
+		s_eig_n = size( S_vecs, 2 );
+		S0_star = Get_S_x_star( v_n, S0 );
+		
+		% transform A0 to normal
+		A0 = reshape(A0, a_height, a_width, nchannels);
+		                        
+		% begin to iterate
+		i_iters = 0;
+		f_RMS_err   = 10000;
+		f_RMS_old   = 10000;
+		while ((i_iters < n_iters)&&(f_RMS_err > RMS_err))
+		                           % Warp I with W(x;p) followed by N(x;q) to compute I(W(x;p))
+		                           S = S_vecs * p + S0; %note the center of S are on origin    
+		                           
+		                           S_star = Get_S_x_star( v_n, S );                           
+		                           S = S_star * q + S;               
+		                           
+		                           current_s = reshape( S, v_n, 2 );
+		                           I_warp = Piecewise_Warp(current_s, I, nchannels, warp_table, Mesh, a_height, a_width );
+		                           
+		                           % Compute the error image I_warp - A0
+		                           I_warp = reshape( I_warp, a_height, a_width, nchannels);
+		                           err_image = I_warp - A0;
+		                           
+		                           % Compute dot product of modified steepest descent images with error image
+		                           SD_err_image = zeros( s_eig_n+4, 1, nchannels );
+		                           for j=1:(s_eig_n+4)
+		                              h1 = SD(:, (j-1)*a_width+1:j*a_width, :);
+		                              SD_err_image(j, 1, :) = sum(sum(h1 .* err_image));
+		                           end
+		                           
+		                           % Compute delta q and delta p by multiplying by inverse Hessian
+		                           delta_qp = zeros( s_eig_n+4, 1, nchannels );
+		                           for k=1:nchannels
+		                              delta_qp(:,1,k) = H_inv(:,:,k) * SD_err_image(:,:,k);
+		                           end      
+		                           
+		                           % Update the warp (NoW)(x;q,p) <- (NoW)(x;q,p) o (NoW)(x;delta_q,delta_p)_-1
+		                           S_est = zeros(v_n*2, 1, nchannels);
+		                           for i=1:nchannels
+		                              S_delta_p = S_vecs * (-delta_qp(5:s_eig_n+4,1,i)) + S0;
+		                              
+		                              S_delta_p_star = Get_S_x_star( v_n, S_delta_p );
+		                              S_delta_qp = S_delta_p_star * (-delta_qp(1:4, 1, i)) + S_delta_p;      
+		                              
+		                              for j=1:v_n
+		                                 Tris_adjacent = Find_adjacent_triangles( Mesh, j );                                 
+		                                 Tris_adjacent = Find_alpha_beta( v_n, S0, S_delta_qp, Tris_adjacent, j );
+		                                 Verts_warped = Find_verts_in_shape( Tris_adjacent, S ); 
+		                                 Verts_mean    = mean( Verts_warped );
+		                                 S_est( j, 1, i ) = Verts_mean(1,1);
+		                                 S_est( v_n+j, 1, i) = Verts_mean(1,2);
+		                              end
+		                           end
+		                           S_est = mean( S_est, 3 ); % S_est degenerates to 1 channel                           
+		                           q = S0_star' * (S_est - S0);          
+		                           % in order to calculate N(S_est,q)_-1, we have to make clear the transform effect of q                        
+		                           trans_weight_x = 1 / S0_star( 1, 3 );
+		                           trans_weight_y = 1 / S0_star( v_n+1, 4 );
+		                           scale_weight = S0(1,1) / S0_star(1,1);
+		                           
+		                           q0 = q;
+		                           q0(1,1) = q(1,1) / scale_weight;
+		                           q0(2,1) = q(2,1) / scale_weight;
+		                           q0(3,1) = q(3,1) / trans_weight_x;
+		                           q0(4,1) = q(4,1) / trans_weight_y;
+		                           
+		                           % get the transform info of q
+		                           k = sqrt(((q0(1,1)+1)*(q0(1,1)+1) + q0(2,1)*q0(2,1)));
+		                           theta = asin(q0(2,1)/k); 
+		                           trans_x = q0(3,1) ;
+		                           trans_y = q0(4,1) ;
+		                           
+		                           % make a transform matrix to erase the effect caused by q
+		                           k = 1/k;
+		                           theta = -theta;
+		                           trans_x = -trans_x;
+		                           trans_y = -trans_y;
+		                           tm = [ k*cos(theta)                              k*sin(theta)                               0;
+		                                 -k*sin(theta)                              k*cos(theta)                               0;
+		                                 k*trans_x*cos(theta)-k*trans_y*sin(theta)  k*trans_x*sin(theta)+k*trans_y*cos(theta)  1];
+		                           
+		                            % get N(S_est,q)_-1 
+		                            S_est_q_inverse =   S_est;
+		                            S_est_q_inverse = reshape( S_est_q_inverse, v_n , 2);
+		                            S_est_q_inverse = [ S_est_q_inverse, ones( v_n, 1) ];
+		                            
+		                            S_est_q_inverse = S_est_q_inverse * tm;
+		                            
+		                            S_est_q_inverse = S_est_q_inverse( :,1:2 );                            
+		                            S_est_q_inverse = reshape( S_est_q_inverse, v_n*2, 1 );
+		                           
+		                           p = S_vecs' * (S_est_q_inverse - S0);
+		                           
+		                           % constrain the p
+		                           for i=1:s_eig_n
+		                               if p(i,1)<Range_shape_proj_param(i,1)
+		                                   p(i,1) = Range_shape_proj_param(i,1);
+		                               elseif p(i,1)>Range_shape_proj_param(i,2)
+		                                   p(i,1)=Range_shape_proj_param(i,2);
+		                               end
+		                           end      
+		                           
+		                           % update the iteration  parameters
+		                           f_RMS = sqrt(mean(err_image(:) .^2));
+		                           f_RMS_err = abs(f_RMS - f_RMS_old);
+		                           f_RMS_old = f_RMS;
+		                           
+		                           i_iters  = i_iters + 1;                           
+		end
+       Functions:
+                        1) (F5.1) function Tris_adjacent = Find_adjacent_triangles( Mesh, j )
+                                      where Tris_adjacent is a [How_many_adjacent_triangles_around_vert_j, 5] matrix, in each row it contains tri_vert1, tri_vert2, tir_vert3, alpha and beta, although alpha and beta is blank now, they are just preserved for future use.
+                        2) (F5.2) function Tris_adjacent = Find_alpha_beta(v_n, S0, S_delta_p, Tris_adjacent, j )
+                                      where Tris_adjacent is described as above.
+                        3) (F5.3 ) function Verts_warped = Find_verts_in_shape( Tris_adjacent, S )
+                                      where Verts_warped is a [How_many_adjacent_triangles_around_vert_j, 2] matrix. in each row it contains x, y of a corresponding vertex in S.                    
+                        4) function S_x_star = Get_S_x_star( v_n, S_x )
+                                     Just is (F4.2)
+                        5) function Warped_image = Piecewise_Warp(current_shape, current_image, nchannels, warp_table, Mesh, a_height, a_width )
+                                     Just is (F3.2)
+                             
+2. System Architecture by Files
+    2.1 Main Funtion Files
+         Description: These files contain the main logic of the 2D AAM algoritm.
+         2.1.1 AnnotateShape --- Annotate.m
+         	Form : function annotate( dest_dir, im, file_name, handles) 
+                  annotate the shape in a given image
+         2.1.2 Model Shape --- ModelShape.m
+                  Form : function [...] = ModelShape(...)
+                  Paras: Its input and out is refered to section 1.2
+                  Funcs: F2, F2.2
+         2.1.3 Model Appearance --- ModelAppearance.m
+                  Form : function [...] = ModelAppearance(...)
+                  Paras: Its input and out is refered to section 1.3
+                  Funcs: F3, F3.1, F3.3
+         2.1.4 FittingPreCalcu --- FittingPreCalcu.m
+                  Form : function [...] = FittingPreCalcu(...)
+                  Paras: Its input and out is refered to section 1.4
+                  Funcs: F4, F4.1, F4.3, F4.4
+         2.1.5 Fitting --- Fitting.m
+                  Form : function [...] = Fitting(...)
+                  Paras : Its input and out is refered to section 1.5
+                  Funcs: F5, F5.1, F5.2, F5.3
+     2.2 Utilities Files
+         Description: These files contain the utilities
+         2.2.1 read the asf file to load the shape to a one-column matrix --- readasf.m
+                  See F2.1 for details
+         2.2.2 Do PCA --- PCA.m
+                  See F2.3 for details
+         2.2.3 do Piecewise Warp --- Piecewise_Warp.m
+                  See F3.2 for details
+         2.2.4 get S_x_star matrix for S_x to do global shape transform --- Get_S_x_star.m
+                  See F4.2 for details
+     2.3 HCI files
+         Description: Human-Computer Interaction files for experiment
+         2.3.1 Model AAM --- ModelAAM.m
+                  Just a collection of scripts. Do the Jobs of F2~F4. Write the outputs to a mat file named mat_model.mat
+         2.3.2 Fit  --- FitGUI.m & FitGUI.fig
+                  A GUI m file to do experiment on the fitting algorithm
+                  a menu --- Open image File (open a target image to fit) | Open video file (open a target video to fit)
+                  a figure --- to show the target iamge and the shape
+                  a button --- to start the fitting
+                  3 slider bars --- to initialize q
+                  2 eidt box --- to input the n_iters and RMS_err
+         2.3.3 Annotate --- Annotate.m & Annotate.fig
+                 A GUI m file to do shape annotation in a frame of  avi file.
+                 a menu --- to open a avi file
+                 a figure --- to show the frame and show the annotation shape
+                 a button --- to start the annotation
+                 a slider bar --- to navigate in the avi file
+                 a edit box  --- to input the directiory of the output bmp and asf files

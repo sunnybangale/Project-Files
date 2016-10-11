@@ -1,0 +1,54 @@
+LED
+
+6th ground
+12th signal
+
+DHT11
+
+2nd VCC
+15th Signal
+39th Ground
+
+
+Getting started
+
+1.Download Raspian image from the given website - http://downloads.raspberrypi.org/images/raspbian/2012-12-16-wheezy-raspbian/2012-12-16-wheezy-raspbian.zip
+
+2.Copy it to the memory card.If copying from windows use Windows disk manager.If copying from linux follow following steps - 
+Find the name of the device of the plugged in SD-card. For instance I typed ls -la /dev/sd*before and after plugging in the sd-card. I saw the date of /dev/sdc change and thus decided that that was the one.
+Find the place of the unzipped image, which was /home/username/Downloads/2012-10-28-wheezy-raspbian.img for me.
+               Type the following
+               Sudo dd if=img location op=/dev/sdc
+
+3. Booting device for the first time:Login with username pi and password raspberry
+
+4.Change the proxy settings first in order to access the internet:( navigate to /etc/apt/apt.conf.d/  Then create and open 10proxy file by putting command nano10proxy and Then add the Acquire::http::Proxy "http://username:password@proxy_server_address:port"; line ( you have to add the sentence in bold) and Save it . )
+
+5. Run sudo apt-get command(to update all packages).
+
+6.Run sudo rpi update
+
+7. //Time and date settings-sunny
+
+8. Hdmi settings: navigate to /boot/config.txt and change 2 things -firstly uncomment hdmi_safe and chandge value of congig_hdmi_boost=4
+
+9.To change date and time follow following steps:
+      If you set the Time Zone in raspi-config the Raspberry Pi will automatically update the time on boot,                                                                                                                                                                                                                    if connected to the internet.
+sudo raspi-config.
+Select Internationalisation Options.
+Select I2 Change Timezone.
+Select your Geographical Area.
+Select your nearest City.
+Select Finish.
+Select Yes to reboot now.
+
+
+10.To change keyboard settings :
+     
+
+
+
+                              
+
+
+http://pi4j.com/example/control.html        

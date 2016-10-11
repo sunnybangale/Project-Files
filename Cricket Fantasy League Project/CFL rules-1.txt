@@ -1,0 +1,73 @@
+Rules
+
+Every player must get Rs. 50.
+And a pen, notepad and a print of the list of players, if they want.
+
+Auction-
+
+Each owner needs to a buy a minimum of 15 players and a maximum of 21 players.
+You will have Rs. 100 crore to spend.
+
+Team Composition-
+
+The Playing 11 must at all times consist of at least 3 bowlers, 1 captain and 1 wicket keeper.
+The 11 must also contain 5 players who bowl.
+	i.e. if you have 3 bowlers, then you must have at least 2 all rounders
+	A player who is picked from a set labelled batsman will not be considered as an allrounder even if he bowls a bit.
+
+Captain-
+Each team will have to announce a permanent captain before the start of the tournament.
+Temporary captains may be kept at the expense of a substitution.
+Changing the permanent captain will be counted as 2 substitutions.
+The captain earns you double points.
+For example-
+Suppose your permanent captain is Virat Kohli.
+But, on a day when India is not playing you want to keep Eoin Morgan as your captain. This will count as 1 substitution. Shifting back to Kohli from Morgan will not count as a substitution.
+If you are fed up with Kohli's performance and want to make someone who is playing well, say Shane Watson your permanent captain, you can do so at the expense of 2 substitutions.
+
+Substitutions- 60
+
+Points-
+
+Batting
+Run- 1
+Four- 2
+Six- 3
+
+The total points will be multiplied by the Batsman's SR and divided by the average SR of that match. This value will be multiplied by the impact factor to get the actual points.
+Impact factor: If Batsman comes to bat before 30 ov: 1.1
+	       If Batsman comes to bat after 30 ov: 1/1.1 = 0.909
+
+Bonus Batting points: 
+30- 5
+50- 10
+100- 20
+Max 6s- 10 (in case of equal no. of 6s, batsman with greater strike rate will get this)
+
+Bowling
+
+Over: 2
+Wicket: 25
+
+The total points will be multiplied by the average match ER and divided by the bowler's ER.
+
+Bonus Bowling points:
+Maiden: 10
+3 wickets: 10
+5 wickets: 20
+
+Fielding
+
+Catch: 5
+Runout: 10
+Runout (Direct hit): 20
+Stumping: 20
+
+Man of the match: 25
+
+Man of the match Prediction Bonus
+
+Every match you predict who the man of the match will be. If your prediction is correct, you get bonus points. Bonus points are as follows:
+If predicted player is not in your team: 15
+If predicted player is in your team: 25
+If predicted player is your captain: 50

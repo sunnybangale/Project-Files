@@ -1,0 +1,129 @@
+
+drop database cfl;
+
+create database cfl;
+use cfl;
+
+create table players(id integer primary key,name varchar(50), country varchar(30), type varchar(30), owner_name varchar(30));
+
+--INDIA..............
+
+insert into players values (1, 'MS Dhoni', 'IND', 'WK-BAT', 'sunny');
+insert into players values (2, 'Virat Kohli', 'IND', 'BAT', 'shraddha');
+insert into players values (3, 'Ajinkya Rahane', 'IND', 'BAT', 'meghana');
+insert into players values (4, 'Suresh Raina', 'IND', 'BAT', 'apeksha');
+insert into players values (5, 'Rohit Sharma', 'IND', 'BAT', 'sunny');
+insert into players values (6, 'Shikhar Dhawan', 'IND', 'BAT', 'shraddha');
+insert into players values (7, 'Ravindra Jadeja', 'IND', 'ALL', 'sunny');
+insert into players values (8, 'Stuart Binny', 'IND', 'ALL', 'shraddha');
+insert into players values (9, 'Bhuwaneshwar Kumar', 'IND', 'BOWL', 'sunny');
+insert into players values (10, 'Mohit Sharma', 'IND', 'BOWL', 'shraddha');
+insert into players values (11, 'Mohammad Shami', 'IND', 'BOWL', 'meghana');
+insert into players values (12, 'Umesh Yadav', 'IND', 'BOWL', 'apeksha');
+insert into players values (13, 'Ravichndran Ashwin', 'IND', 'BOWL', 'sunny');
+insert into players values (14, 'Axar Patel', 'IND', 'BOWL', 'shraddha');
+insert into players values (15, 'Ambati Rayudu', 'IND', 'BAT', 'meghana');
+
+
+--AUSTRALIA...........
+
+insert into players values (16, 'Michael Clarke', 'AUS', 'BAT', 'sunny');
+insert into players values (17, 'George Bailey', 'AUS', 'BAT', 'shraddha');
+insert into players values (18, 'David Warner', 'AUS', 'BAT', 'meghana');
+insert into players values (19, 'Aaron Finch', 'AUS', 'BAT', 'apeksha');
+insert into players values (20, 'Brad Haddin', 'AUS', 'WK-BAT', 'sunny');
+insert into players values (21, 'Shane Watson', 'AUS', 'ALL', 'sunny');
+insert into players values (22, 'Steve Smith', 'AUS', 'ALL', 'shraddha');
+insert into players values (23, 'Glenn Maxwell', 'AUS', 'ALL', 'meghana');
+insert into players values (24, 'James Faulkner', 'AUS', 'ALL', 'apeksha');
+insert into players values (25, 'MItchell Marsh', 'AUS', 'ALL', 'shraddha');
+insert into players values (26, 'MItchell Starc', 'AUS', 'BOWL', 'sunny');
+insert into players values (27, 'MItchell Jhonson', 'AUS', 'BOWL', 'shraddha');
+insert into players values (28, 'Pat Cummins', 'AUS', 'BOWL', 'meghana');
+insert into players values (29, 'Josh Hazlewood', 'AUS', 'BOWL', 'apeksha');
+insert into players values (30, 'Xavier Doherty', 'AUS', 'BOWL', 'apeksha');
+
+--South Africa.......
+
+insert into players values (31, 'AB De Villiers', 'SA', 'BAT', 'sunny');
+insert into players values (32, 'Quiton De Kock', 'SA', 'WK-BAT', 'shraddha');
+insert into players values (33, 'Faf Du Plesis', 'SA', 'BAT', 'meghana');
+insert into players values (34, 'David Miller', 'SA', 'BAT', 'apeksha');
+insert into players values (35, 'Rilee Roussow', 'SA', 'BAT', 'meghana');
+insert into players values (36, 'Hashim Amla', 'SA', 'BAT', 'sunny');
+insert into players values (37, 'Farhaan Behardien', 'SA', 'ALL', 'shraddha');
+insert into players values (38, 'JP Duminny', 'SA', 'ALL', 'sunny');
+insert into players values (39, 'Dale Steyn', 'SA', 'BOWL', 'sunny');
+insert into players values (40, 'Imran Tahir', 'SA', 'BOWL', 'shraddha');
+insert into players values (41, 'Morne Morkel', 'SA', 'BOWL', 'meghana');
+insert into players values (42, 'Kyle Abott', 'SA', 'BOWL', 'apeksha');
+insert into players values (43, 'Wayne parnell', 'SA', 'BOWL', 'apeksha');
+insert into players values (44, 'Vernon Philander', 'SA', 'BOWL', 'meghana');
+insert into players values (45, 'Aaron Phangiso', 'SA', 'BOWL', 'apeksha');
+
+--New Zealand.........
+
+insert into players values (46, 'Corey Anderson', 'NZ', 'BAT', 'sunny');
+insert into players values (47, 'Brendon Muccllum', 'NZ', 'WK-BAT', 'meghana');
+insert into players values (48, 'Martin Guptill', 'NZ', 'BAT', 'shraddha');
+insert into players values (49, 'Ross Taylor', 'NZ', 'BAT', 'apeksha');
+insert into players values (50, 'Luke Ronchi', 'NZ', 'BAT', 'sunny');
+insert into players values (51, 'Kane Williamson', 'NZ', 'BAT', 'meghana');
+insert into players values (52, 'Grant Elliot', 'NZ', 'ALL', 'sunny');
+insert into players values (53, 'Nathan Muccullum', 'NZ', 'ALL', 'shraddha');
+insert into players values (54, 'Trent boult', 'NZ', 'BOWL', 'sunny');
+insert into players values (55, 'Tim Southee', 'NZ', 'BOWL', 'shraddha');
+insert into players values (56, 'Adam Milne', 'NZ', 'BOWL', 'meghana');
+insert into players values (57, 'Dan Vettori', 'NZ', 'BOWL', 'apeksha');
+insert into players values (58, 'Kyle Mills', 'NZ', 'BOWL', 'meghana');
+insert into players values (59, 'Mitchell Mccleneghan', 'NZ', 'BOWL', 'sunny');
+insert into players values (60, 'Tom Lathom', 'NZ', 'BOWL', 'apeksha');
+
+--England............
+
+insert into players values (61, 'Joe Root', 'ENG', 'BAT', 'sunny');
+insert into players values (62, 'Alex Hales', 'ENG', 'BAT', 'shraddha');
+insert into players values (63, 'Gary Ballance', 'ENG', 'BAT', 'meghana');
+insert into players values (64, 'Ian Bell', 'ENG', 'BAT', 'apeksha');
+insert into players values (65, 'Eoin Morgan ', 'ENG', 'BAT', 'apeksha');
+insert into players values (66, 'Jos Butler', 'ENG', 'WK-BAT', 'shraddha');
+insert into players values (67, 'Ravi Bopara', 'ENG', 'ALL','sunny');
+insert into players values (68, 'James Taylor', 'ENG', 'ALL', 'shraddha');
+insert into players values (69, 'Moeen Ali', 'ENG', 'ALL', 'meghana');
+insert into players values (70, 'Chris Woakes', 'ENG', 'ALL', 'apeksha');
+insert into players values (71, 'Stuart Broad', 'ENG', 'BOWL', 'sunny');
+insert into players values (72, 'James Anderson', 'ENG', 'BOWL', 'shraddha');
+insert into players values (73, 'James Tredwell', 'ENG', 'BOWL', 'meghana');
+insert into players values (74, 'Chris Jordan', 'ENG', 'BOWL', 'apeksha');
+insert into players values (75, 'Steven Finn', 'ENG', 'BOWL', 'meghana');
+
+--Sri Lanka............
+
+insert into players values (76, 'Kumar Sangakkara', 'SL', 'BAT', 'sunny');
+insert into players values (77, 'Tillakaratne Dilshan', 'SL', 'BAT', 'shraddha');
+insert into players values (78, 'Mahela Jayawardane', 'SL', 'BAT', 'meghana');
+insert into players values (79, 'Dinesh Chandimal', 'SL', 'WK-BAT', 'apeksha');
+insert into players values (80, 'Lahiru Thirimanne', 'SL', 'BAT', 'shraddha');
+insert into players values (81, 'Dimuth Karunaratne', 'SL', 'BAT', 'apeksha');
+insert into players values (82, 'Angelo Mathews', 'SL', 'ALL', 'sunny');
+insert into players values (83, 'Jeevan Mendis', 'SL', 'ALL', 'shraddha');
+insert into players values (84, 'Thisara Perera', 'SL', 'ALL', 'sunny');
+insert into players values (85, 'Suranga Lakmal', 'SL', 'BOWL', 'sunny');
+insert into players values (86, 'Nuwan Kulasekara', 'SL', 'BOWL', 'shraddha');
+insert into players values (87, 'Lasith Malinga', 'SL', 'BOWL', 'meghana');
+insert into players values (88, 'Dhammika Prasad', 'SL', 'BOWL', 'apeksha');
+insert into players values (89, 'Sachitra Senanayake', 'SL', 'BOWL', 'meghana');
+insert into players values (90, 'Rangana Herath', 'SL', 'BOWL', 'apeksha');
+
+---Rankings---
+create table rankings (owner varchar(30), total  integer default 0);
+insert into rankings values ('sunny',0);
+insert into rankings values ('meghana',0);
+insert into rankings values ('shraddha',0);
+insert into rankings values ('apeksha',0);
+
+---Points---
+create table points (id integer references players(id), name varchar(50), points integer default 0,owner_name varchar(50));
+
+---Owner Info-----
+create table ownerinfo (oid integer(20),name varchar(30),gender varchar(30), address varchar(30),dob date,age integer(4),phone bigint(21),userid varchar(30),password varchar(30));

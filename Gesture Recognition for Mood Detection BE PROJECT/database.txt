@@ -1,0 +1,41 @@
+create database gesture;
+use gesture;
+
+create table user_table
+(
+u_id varchar(30) primary key,
+name varchar(30),
+gender varchar(30),
+address varchar(30),
+dob date,
+age int(4),
+phone_no bigint(21),
+userid varchar(20),
+password varchar(20),
+no_of_sessions_attended int(20),
+primary_session_date date,
+type_of_patient varchar(20)
+);
+
+create table admin_table
+(
+admin_id varchar(30),
+u_id varchar(30) unique,
+name varchar(30),
+profession varchar(30),
+address varchar(30),
+phone_no bigint(21),
+userid varchar(20),
+password varchar(20)
+);
+
+create table past_table
+(
+u_id varchar(30),
+name varchar(30),
+past_history varchar(500),
+result_q integer(10) default 0,
+result_v integer(10) default 0,
+result_a integer(10) default 0,
+session_date date
+);

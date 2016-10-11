@@ -1,0 +1,28 @@
+
+     if ((password.getText().equals(password2.getText()))&&(count >=7)){
+confirm.setText("Passwords match");
+     }
+     else{    
+         JOptionPane.showMessageDialog(null,"Passwords donot match or they are too short!" );
+password.setText("");
+password2.setText("");
+
+     }
+---
+if (input_pwd.getText().equals(confirm_pwd.getText())){
+
+     }
+     else{
+         JOptionPane.showMessageDialog(null,"password typed wrongly" );
+input_pwd.setText("");
+confirm_pwd.setText("");
+confirm_pwd.setText("Passwords match");
+     }
+ if(confirm_pwd.getText()==null||confirm_pwd.getText().equals("")){
+confirmcons.setText("Please enter your name");
+confirm_pwd.requestFocus();
+
+
+    }
+    else
+confirmcons.setText("");
