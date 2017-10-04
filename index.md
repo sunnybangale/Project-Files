@@ -9,10 +9,10 @@ I want to be involved in creative and constructive work that would not only sati
 ### My Computer Skills
 Programming Languages: Core Java, J2EE, Python, C, C++ and Visual Basic.   
 Operating Systems: Windows and Linux   
-Web Technologies: HTML5, Bootstrap AngularJs, JavaScript, Java Server Pages and Servlets.   
+Web Technologies: HTML5, Bootstrap, AngularJs, JavaScript, Java Server Pages and Servlets.   
 Databases: Oracle, MySQL and PostgreSQL   
 Platforms: Thingworx, IBM Bluemix and Amazon Web Services   
-Tools: Eclipse, Java NetBeans, IntelliJ   
+Tools: Eclipse, Java NetBeans, PyCharm, Anaconda3 (Jupyter Notebook)
 Interests: Internet of Things, Artificial Intelligence, Machine Learning, Database Management Systems, Big Data and Cloud Computing   
 Hardware Skills: Raspberry Pi and Intel NUC
 Certifications: PTC- Thingworx Developer Associate 
