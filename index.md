@@ -1,5 +1,5 @@
 ### Welcome!!
-Hello Folks! I am Sunny Bangale, a Bachelor of Engineering Graduate from Pune, India.
+Hello Folks! I am Sunny Bangale, a Master's Student at UT Dallas, TX
 I believe in a balance of academics and non scholastic activities- an important factor to enhance one's all round personality. Apart from being a developer and a programming enthusiast, I am a photographer, artist, singer and a music lover. View my projects on GITHUB. Find the description in the README file. Hope you like them.... 
 
 ### My Objective
