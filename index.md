@@ -15,7 +15,7 @@ Platforms: Thingworx, IBM Bluemix and Amazon Web Services
 Tools: Eclipse, Java NetBeans, PyCharm, Anaconda3 (Jupyter Notebook)
 Interests: Internet of Things, Artificial Intelligence, Machine Learning, Database Management Systems, Big Data and Cloud Computing   
 Hardware Skills: Raspberry Pi and Intel NUC
-Certifications: PTC- Thingworx Developer Associate 
+Certifications: PTC- Thingworx Developer Associate
 
 ### Support or Contact
 Having trouble with Pages? Check out our [documentation](https://help.github.com/pages) or [contact support](https://github.com/contact) and we’ll help you sort it out.
