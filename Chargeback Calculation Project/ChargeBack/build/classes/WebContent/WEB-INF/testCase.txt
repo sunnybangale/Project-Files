@@ -1,0 +1,9 @@
+com.cts.cbc.bo.IndividualUserBuyCalculationsTest
+com.cts.cbc.bo.IndividualUserSellCalculationsTest
+com.cts.cbc.bo.UserBOTest
+com.cts.cbc.dao.DisplayUserDAOTest
+com.cts.cbc.dao.UserDAOTest
+com.cts.cbc.dao.LoginUserDAOTest
+com.cts.cbc.bo.FundUserBuyCalculationsTest
+com.cts.cbc.bo.FundUserSellCalculationsTest
+com.cts.cbc.dao.FundDAOTest

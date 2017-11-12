@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>ChargeBackCalculation</display-name>
+  <welcome-file-list>
+    <welcome-file>Chargeback.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <servlet>
+		<servlet-name>JUnitEETestServlet</servlet-name>
+		<servlet-class>org.junitee.servlet.JUnitEEServlet</servlet-class>
+		<init-param>
+			<param-name>searchResources</param-name>
+			<param-value></param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>JUnitEETestServlet</servlet-name>
+		<url-pattern>/TestServlet/*</url-pattern>
+	</servlet-mapping>  
+  
+  
+  <servlet>
+    <description></description>
+    <display-name>ValidationServlet</display-name>
+    <servlet-name>ValidationServlet</servlet-name>
+    <servlet-class>com.cts.cbc.controller.ValidationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ValidationServlet</servlet-name>
+    <url-pattern>/ValidationServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>RegistrationServlet</display-name>
+    <servlet-name>RegistrationServlet</servlet-name>
+    <servlet-class>com.cts.cbc.controller.RegistrationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RegistrationServlet</servlet-name>
+    <url-pattern>/RegistrationServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ForgetPasswordServlet</display-name>
+    <servlet-name>ForgetPasswordServlet</servlet-name>
+    <servlet-class>com.cts.cbc.controller.ForgetPasswordServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ForgetPasswordServlet</servlet-name>
+    <url-pattern>/ForgetPasswordServlet</url-pattern>
+  </servlet-mapping>
+</web-app>
