@@ -1,0 +1,116 @@
+body {
+    margin: 30px auto;
+    width: 100%;
+    max-width: 1250px;
+    background-image: url("ship.jpg"); 
+	font-family: 'Arial Black','Helvetica', 'Sans-Serif';
+	
+	
+}
+
+header
+{
+	background: black;
+	width: 90%;
+	padding-left: 5%;
+	padding-right: 5%;
+	
+}
+
+h1 {
+    font-size: 5em;
+    font-family: 'Arial Black','Helvetica', 'Sans-Serif';
+	color: #FFFFFF;
+    align-content: center;
+}
+
+p, button, input {
+    font-size: 1.5em;
+    line-height: 1.4em;
+    color: #333;
+	margin-bottom:1em;
+}
+
+#playerBoard1 {
+	position: relative;
+    left: 30px;
+	float: left;
+	width:500px;
+	height:500px;
+}
+
+#playerBoard1 div {
+	position: absolute;
+    float: left;
+	box-sizing: border-box;         
+	/*background: #05259D; 			
+	border: 1px solid #C4AD02;
+	*/
+    background: #091034; 			
+	border: 1px solid white;
+	
+    width:50px;
+	height:50px;
+}
+
+#playerBoard2 {
+	position:relative;
+	float: right;
+	margin:0 auto 2em auto;
+	width:500px;
+	height:500px;
+}
+
+#playerBoard2 div {
+	position: absolute;
+    float: right;
+	box-sizing: border-box;         
+	/*background: #05259D; 			
+	border: 1px solid #C4AD02;
+	*/
+    background: #091034; 			
+	border: 1px solid white;
+	width:50px;
+	height:50px;
+	
+}
+
+
+table
+{
+    border-collapse: separate;
+    border-spacing: 250px 0;
+    margin:auto;
+    font-size: 40px;
+    text-align: center;
+    width: 500 px;
+}
+
+th, td
+{
+    padding-left: 50px;
+    color: black;
+}
+
+.player1Status
+{
+    float:left;
+    font: #000000;
+    overflow:hidden;
+}
+
+.player2Status
+{
+    
+}
+
+
+footer
+{
+	background: black;
+	color:white;
+	text-align: center;
+}
+
+
+
