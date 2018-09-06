@@ -11,6 +11,7 @@ I want to be involved in creative and constructive work that would not only sati
 I want to innovate for the future.
 
 ### My Computer Skills
+<table>
 <tr>
 <td>Programming Languages:</td>
 <td>Core Java, Java EE, Java SE, Python (Scikit-learn), Scala, C++ and C </td>
