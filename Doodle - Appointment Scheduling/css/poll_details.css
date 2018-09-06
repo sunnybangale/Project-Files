@@ -1,0 +1,80 @@
+
+.pollbutton {
+    background-color: midnightblue;
+    font-family: 'diavlo';
+     border: none;
+    color: white;
+    padding: 10px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+    
+    color: white; 
+    
+    
+}
+
+.time{
+    background-color: midnightblue; /* Green */
+    border: none;
+    color: white;
+    padding: 5px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+    background-color: white; 
+    color: black; 
+    border: 2px solid midnightblue;
+    
+}
+
+.pollbutton:hover {
+    background-color: midnightblue;
+    color: white;
+}
+
+.intervs{
+    text-align: center;
+}
+
+body{
+    font-family:"Diavlo";
+    padding:10px;
+}
+legend{
+    padding:0px 10px;
+    background:black;
+    color:#FFF;
+}
+.yui3-button {
+    margin:10px 0px 10px 0px;
+    color: #fff;
+    background-color: #3476b7;
+}
+
+.selectdate{
+    font-size: 20px;
+}
+
+
+#container_demo{
+	 text-align: left;
+	 margin: 0.5em;
+	 padding: 0.5em;
+	 margin: 0.5em auto;
+    font-family: 'diavlo';
+    background-image: url("images/bckbg.jpg");
+    height: 900px;
+    background-repeat: repeat;
+    
+}
