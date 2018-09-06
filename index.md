@@ -44,7 +44,7 @@ I want to innovate for the future.
 
 <tr>
 <td>Tools:</td>
-<td>Eclipse, Java NetBeans, PyCharm, Anaconda3 (Jupyter Notebook) </td>
+<td>Eclipse, Java NetBeans, PyCharm, Anaconda3 (Jupyter Notebook), IntelliJ </td>
 </tr>
   
 <tr>
