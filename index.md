@@ -10,7 +10,6 @@ The whole world steps aside for the man who knows where he's going...
 I want to be involved in creative and constructive work that would not only satisfy my appetite for learning and serving common people but, also boost my skills that can prove to be beneficial for the society as a whole. I want to innovate for the future.
 
 ### My Computer Skills
-<table>
 <tr>
 <td>Programming Languages:</td>
 <td>Core Java, Java EE, Java SE, Python (Scikit-learn), Scala, C++ and C </td>
@@ -55,5 +54,4 @@ I want to be involved in creative and constructive work that would not only sati
 <td>Certifications:</td>
 <td>PTC- Thingworx Developer Associate </td>
 </tr>  
-</table>
 
