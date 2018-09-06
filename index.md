@@ -14,7 +14,7 @@ I want to be involved in creative and constructive work that would not only sati
 <tr>
 <td>Programming Languages:</td>
 <td>Core Java, Java EE, Java SE, Python (Scikit-learn), Scala, C++ and C </td>
-<tr>
+</tr>
 
 <tr>
 <td>Web Technologies:</td>
