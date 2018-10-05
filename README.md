@@ -20,7 +20,9 @@ Project: Recyclone Application for Recycling Company
 Technologies: Java and MySQL
 It is a grade XII project for a company which acts as an intermediate for Recycling of products. It is a project used for processing customer and client relationships through buying and selling of recyclable materials.
 
-Project: ‘Chargeback Calculation in Stock Market ‘
+Project: Chargeback Calculation in Stock Market
 Technologies: Java, HTML, JavaScript, JSP, Servlets and Oracle 
 It is a web application used for determining portfolio transaction costs driven by client cash flows, and to charge those costs back to the appropriate clients. Chargeback is calculated by the Bank Representative at the time of buying or selling a stock for a client or for a fund irrespective of profit or loss.
 
+Project: Doodle - Appointment and Meeting Scheduler web application
+Developed a web application using PHP, MySQL, CSS and HTML that schedules appointments using a polling system to decide the final meeting time. It automatically selects the best time to meet based on the votes in the poll. It is a simple and intuitive web application that helps decide the meeting time by coordinating efficiently between people.
