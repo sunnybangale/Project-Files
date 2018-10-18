@@ -41,3 +41,9 @@ Project: 'Doodle - Appointment and Meeting Scheduler web application'
 Technologies: PHP, MySQL, CSS and HTML 
 <br>
 Developed a web application that schedules appointments using a polling system to decide the final meeting time. It automatically selects the best time to meet based on the votes in the poll. It is a simple and intuitive web application that helps decide the meeting time by coordinating efficiently between people.
+
+Project: 'Grocery Sales Forecasting - Supermarket Company'
+<br>
+Technologies: Python and Scikit Learn
+<br>
+Developed an application to forecast product sales using ensemble of machine learning algorithms like, Artificial Neural Networks, Deep Learning, Gradient Boosting, Random Forest, AdaBoost for over 200,000 different products. Predicted unit sales for a dataset of over 5 years with an average error of 0.30 on the mean squared error function.
